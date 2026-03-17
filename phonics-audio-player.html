@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Phonics Textbook — Audio</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f5f4f0;
+      color: #1a1a1a;
+      min-height: 100vh;
+      padding: 2rem 1rem;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      body { background: #1a1a1a; color: #f0efe9; }
+      .track { background: #242424; border-color: #333; }
+      .track:hover, .track.active { background: #2c2c2c; border-color: #444; }
+      .now-playing { background: #242424; border-color: #333; }
+      .tab { border-color: #444; color: #aaa; }
+      .tab:hover { background: #2c2c2c; }
+      .tab.active { background: #f0efe9; color: #1a1a1a; border-color: #f0efe9; }
+      .ctrl-btn { border-color: #444; color: #f0efe9; }
+      .ctrl-btn:hover { background: #2c2c2c; }
+      .ctrl-btn.main { background: #f0efe9; color: #1a1a1a; border-color: #f0efe9; }
+      .play-btn { border-color: #444; color: #f0efe9; }
+      .play-btn:hover { background: #2c2c2c; }
+      .progress-bar { background: #444; }
+      .progress-fill { background: #f0efe9; }
+      .track-num { color: #666; }
+      .track.active .track-num { color: #f0efe9; }
+      .track-desc { color: #888; }
+      .np-label { color: #666; }
+      .np-chapter { color: #888; }
+      .time-row { color: #666; }
+    }
+
+    .app {
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      font-size: 13px;
+      font-weight: 500;
+      color: #888;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 1.5rem;
+    }
+
+    .chapter-tabs {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 1.25rem;
+    }
+
+    .tab {
+      font-size: 13px;
+      font-weight: 500;
+      padding: 5px 12px;
+      border-radius: 20px;
+      border: 1px solid #ccc;
+      background: transparent;
+      color: #888;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .tab:hover { background: #eee; }
+
+    .tab.active {
+      background: #1a1a1a;
+      color: #fff;
+      border-color: #1a1a1a;
+    }
+
+    .track-list {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-bottom: 1.5rem;
+    }
+
+    .track {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid #e5e5e0;
+      background: #fff;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .track:hover { border-color: #bbb; background: #f9f9f6; }
+    .track.active { border-color: #999; background: #f5f4f0; }
+
+    .track-num {
+      font-size: 12px;
+      font-weight: 500;
+      color: #aaa;
+      min-width: 28px;
+    }
+
+    .track.active .track-num { color: #1a1a1a; }
+
+    .track-info { flex: 1; min-width: 0; }
+
+    .track-name {
+      font-size: 14px;
+      font-weight: 500;
+      color: #1a1a1a;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .track-desc {
+      font-size: 12px;
+      color: #888;
+      margin-top: 2px;
+    }
+
+    .play-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 1px solid #ccc;
+      background: transparent;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: all 0.15s;
+      color: #1a1a1a;
+    }
+
+    .play-btn:hover { background: #eee; }
+    .play-btn svg { width: 12px; height: 12px; }
+
+    .now-playing {
+      background: #fff;
+      border-radius: 12px;
+      padding: 1rem 1.25rem;
+      border: 1px solid #e5e5e0;
+    }
+
+    .np-label {
+      font-size: 11px;
+      color: #aaa;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .np-title {
+      font-size: 15px;
+      font-weight: 500;
+      color: #1a1a1a;
+      margin-bottom: 4px;
+    }
+
+    .np-chapter {
+      font-size: 12px;
+      color: #888;
+      margin-bottom: 14px;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 3px;
+      background: #e5e5e0;
+      border-radius: 2px;
+      margin-bottom: 6px;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: #1a1a1a;
+      border-radius: 2px;
+      width: 0%;
+      transition: width 0.1s linear;
+    }
+
+    .time-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: #aaa;
+      margin-bottom: 14px;
+    }
+
+    .controls {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+    }
+
+    .ctrl-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 1px solid #ccc;
+      background: transparent;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #1a1a1a;
+      transition: all 0.15s;
+    }
+
+    .ctrl-btn:hover { background: #f0efe9; }
+
+    .ctrl-btn.main {
+      width: 44px;
+      height: 44px;
+      background: #1a1a1a;
+      color: #fff;
+      border-color: #1a1a1a;
+    }
+
+    .ctrl-btn.main:hover { opacity: 0.8; }
+    .ctrl-btn svg { width: 14px; height: 14px; }
+    .ctrl-btn.main svg { width: 16px; height: 16px; }
+  </style>
+</head>
+<body>
+
+<div class="app">
+  <h1>Phonics Textbook — Audio</h1>
+  <div class="chapter-tabs" id="tabs"></div>
+  <div class="track-list" id="trackList"></div>
+  <div class="now-playing">
+    <p class="np-label">Now playing</p>
+    <p class="np-title" id="npTitle">Select a track</p>
+    <p class="np-chapter" id="npChapter">—</p>
+    <div class="progress-bar" id="progressBar">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+    <div class="time-row">
+      <span id="timeEl">0:00</span>
+      <span id="durEl">0:00</span>
+    </div>
+    <div class="controls">
+      <button class="ctrl-btn" id="prevBtn" title="Previous">
+        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M3 3h1.5v10H3V3zm10 0L6.5 8 13 13V3z"/></svg>
+      </button>
+      <button class="ctrl-btn main" id="playBtn">
+        <svg id="playIcon" viewBox="0 0 16 16" fill="currentColor"><path d="M5 3.5l8 4.5-8 4.5V3.5z"/></svg>
+      </button>
+      <button class="ctrl-btn" id="nextBtn" title="Next">
+        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M12.5 3h1.5v10h-1.5V3zM3 3l6.5 5L3 13V3z"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<audio id="audioEl"></audio>
+
+<script>
+  /*
+  ============================================================
+  EDIT YOUR CHAPTERS AND TRACKS HERE
+  ============================================================
+  Structure:
+  "Chapter Name": [
+    { num: "1.1", name: "Track title", desc: "Short description", url: "https://..." },
+    ...
+  ]
+
+  - num:  Track number shown in the list (e.g. "1.1", "2.3")
+  - name: Track title displayed in the list and now-playing bar
+  - desc: Short subtitle shown under the track name
+  - url:  Direct link to your audio file (mp3, m4a, wav, ogg, etc.)
+          You can use Google Drive, Dropbox, or any file host.
+          Leave as "" if you haven't uploaded the file yet.
+  ============================================================
+  */
+
+  const data = {
+    "Chapter 1: Short Vowels": [
+      { num: "1.1", name: "Short A — 'cat', 'hat', 'map'", desc: "CVC words with /æ/", url: "" },
+      { num: "1.2", name: "Short E — 'bed', 'pen', 'net'", desc: "CVC words with /ɛ/", url: "" },
+      { num: "1.3", name: "Short I — 'sit', 'pin', 'big'", desc: "CVC words with /ɪ/", url: "" },
+      { num: "1.4", name: "Short O — 'hot', 'dog', 'fox'", desc: "CVC words with /ɒ/", url: "" },
+      { num: "1.5", name: "Short U — 'cup', 'run', 'mud'", desc: "CVC words with /ʌ/", url: "" },
+    ],
+    "Chapter 2: Long Vowels": [
+      { num: "2.1", name: "Long A — 'cake', 'rain', 'day'", desc: "Silent-e and vowel teams", url: "" },
+      { num: "2.2", name: "Long E — 'tree', 'seat', 'me'", desc: "Vowel teams ee, ea", url: "" },
+      { num: "2.3", name: "Long I — 'bike', 'night', 'fly'", desc: "Silent-e, igh, y patterns", url: "" },
+      { num: "2.4", name: "Long O — 'bone', 'boat', 'snow'", desc: "Silent-e, oa, ow patterns", url: "" },
+      { num: "2.5", name: "Long U — 'cube', 'blue', 'clue'", desc: "Silent-e, ue patterns", url: "" },
+    ],
+    "Chapter 3: Consonant Blends": [
+      { num: "3.1", name: "Initial blends — bl, cl, fl, gl", desc: "L-blends at word start", url: "" },
+      { num: "3.2", name: "Initial blends — br, cr, dr, gr", desc: "R-blends at word start", url: "" },
+      { num: "3.3", name: "Initial blends — sp, st, sk, sn", desc: "S-blends at word start", url: "" },
+      { num: "3.4", name: "Final blends — nd, nt, nk, ng", desc: "Nasal blends at word end", url: "" },
+    ],
+    "Chapter 4: Digraphs": [
+      { num: "4.1", name: "ch — 'chip', 'bench', 'much'", desc: "/tʃ/ in all positions", url: "" },
+      { num: "4.2", name: "sh — 'ship', 'wish', 'splash'", desc: "/ʃ/ in all positions", url: "" },
+      { num: "4.3", name: "th — 'thin', 'this', 'bath'", desc: "Voiced and voiceless /θ/", url: "" },
+      { num: "4.4", name: "wh — 'when', 'where', 'whale'", desc: "/w/ and /hw/ variants", url: "" },
+    ],
+  };
+
+  /* ============================================================
+     APP LOGIC — no need to edit below this line
+  ============================================================ */
+
+  const chapters = Object.keys(data);
+  let currentChapter = chapters[0];
+  let currentTrackIdx = null;
+  let isPlaying = false;
+  const audio = document.getElementById('audioEl');
+
+  function fmt(s) {
+    if (isNaN(s) || s === Infinity) return '0:00';
+    const m = Math.floor(s / 60), sec = Math.floor(s % 60);
+    return m + ':' + String(sec).padStart(2, '0');
+  }
+
+  function renderTabs() {
+    document.getElementById('tabs').innerHTML = chapters.map((ch, i) =>
+      `<button class="tab${ch === currentChapter ? ' active' : ''}" onclick="selectChapter(${i})">${ch.split(':')[0]}</button>`
+    ).join('');
+  }
+
+  function renderTracks() {
+    const tracks = data[currentChapter];
+    document.getElementById('trackList').innerHTML = tracks.map((t, i) =>
+      `<div class="track${currentTrackIdx === i ? ' active' : ''}" onclick="selectTrack(${i})" id="track-${i}">
+        <span class="track-num">${t.num}</span>
+        <div class="track-info">
+          <div class="track-name">${t.name}</div>
+          <div class="track-desc">${t.desc}</div>
+        </div>
+        <button class="play-btn" onclick="event.stopPropagation(); selectTrack(${i})">
+          <svg viewBox="0 0 12 12" fill="currentColor"><path d="M3 2l7 4-7 4V2z"/></svg>
+        </button>
+      </div>`
+    ).join('');
+  }
+
+  function selectChapter(i) {
+    currentChapter = chapters[i];
+    currentTrackIdx = null;
+    audio.pause();
+    isPlaying = false;
+    updatePlayIcon();
+    document.getElementById('npTitle').textContent = 'Select a track';
+    document.getElementById('npChapter').textContent = '—';
+    document.getElementById('progressFill').style.width = '0%';
+    document.getElementById('timeEl').textContent = '0:00';
+    document.getElementById('durEl').textContent = '0:00';
+    renderTabs();
+    renderTracks();
+  }
+
+  function selectTrack(i) {
+    currentTrackIdx = i;
+    const t = data[currentChapter][i];
+    document.getElementById('npTitle').textContent = t.name;
+    document.getElementById('npChapter').textContent = currentChapter;
+    document.getElementById('progressFill').style.width = '0%';
+    document.getElementById('timeEl').textContent = '0:00';
+    document.getElementById('durEl').textContent = '0:00';
+    renderTracks();
+
+    if (t.url) {
+      audio.src = t.url;
+      audio.play().then(() => { isPlaying = true; updatePlayIcon(); }).catch(() => {});
+    } else {
+      audio.src = '';
+      isPlaying = false;
+      updatePlayIcon();
+    }
+  }
+
+  function togglePlay() {
+    if (currentTrackIdx === null) return;
+    if (!audio.src) return;
+    if (!audio.paused) {
+      audio.pause();
+      isPlaying = false;
+    } else {
+      audio.play().then(() => { isPlaying = true; updatePlayIcon(); }).catch(() => {});
+      isPlaying = true;
+    }
+    updatePlayIcon();
+  }
+
+  function updatePlayIcon() {
+    document.getElementById('playIcon').innerHTML = isPlaying
+      ? '<rect x="3" y="2" width="3.5" height="12" rx="1"/><rect x="9.5" y="2" width="3.5" height="12" rx="1"/>'
+      : '<path d="M5 3.5l8 4.5-8 4.5V3.5z"/>';
+  }
+
+  audio.addEventListener('timeupdate', () => {
+    if (!audio.duration) return;
+    document.getElementById('progressFill').style.width = (audio.currentTime / audio.duration * 100) + '%';
+    document.getElementById('timeEl').textContent = fmt(audio.currentTime);
+    document.getElementById('durEl').textContent = fmt(audio.duration);
+  });
+
+  audio.addEventListener('ended', () => {
+    isPlaying = false;
+    updatePlayIcon();
+    const tracks = data[currentChapter];
+    if (currentTrackIdx < tracks.length - 1) selectTrack(currentTrackIdx + 1);
+  });
+
+  document.getElementById('progressBar').addEventListener('click', e => {
+    if (!audio.duration) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    audio.currentTime = ((e.clientX - rect.left) / rect.width) * audio.duration;
+  });
+
+  document.getElementById('playBtn').addEventListener('click', togglePlay);
+
+  document.getElementById('prevBtn').addEventListener('click', () => {
+    if (currentTrackIdx === null) return;
+    if (currentTrackIdx > 0) selectTrack(currentTrackIdx - 1);
+  });
+
+  document.getElementById('nextBtn').addEventListener('click', () => {
+    if (currentTrackIdx === null) return;
+    if (currentTrackIdx < data[currentChapter].length - 1) selectTrack(currentTrackIdx + 1);
+  });
+
+  renderTabs();
+  renderTracks();
+</script>
+</body>
+</html>
